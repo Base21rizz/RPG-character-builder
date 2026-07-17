@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPG Build Planner - AAA UI Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Include html2canvas for Export feature -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+  :root {
+    --bg-main: #111F35;
+    --accent: #F63049;
+    --accent-2: #D02752;
+    --line: #8A244B;
+    --text: #F5F6FA;
+    --text-muted: #B7BDC9;
+    --radius: 12px;
+    --ease: cubic-bezier(.22,.9,.27,1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  
+  /* Typography & Starlit Abyss Background */
+  body {
+    margin: 0;
+    background: var(--bg-main);
+    color: var(--text);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    
+    /* Starlit Abyss Background with Dark Overlay (#111F35) */
+    background-image:
+      linear-gradient(to bottom, rgba(17, 31, 53, 0.8), rgba(17, 31, 53, 0.95)),
+      url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2560&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-main);
+  }
+
+  /* Custom Thin Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(17,31,53, 0.8); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+  h1, h2, h3, h4, .display, button, select, input { font-family: 'Rajdhani', sans-serif; }
+  h1, h2, h3, h4 { font-weight: 700; letter-spacing: .02em; margin: 0; }
+
+  :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; position: relative; }
+
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-bottom: 28px; border-bottom: 1px solid rgba(138,36,75,0.55);
+    margin-bottom: 36px; flex-wrap: wrap;
+  }
+  
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 42px; height: 42px; border-radius: 9px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 8px 22px -8px rgba(246,48,73,0.65);
+    flex-shrink: 0;
+  }
+  .brand-mark svg { width: 22px; height: 22px; }
+  .brand-text h1 { font-size: 1.8rem; color: var(--text); line-height: 1; }
+  .brand-text p { margin: 2px 0 0; font-size: .85rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 8px; padding: 9px 16px;
+    border: 1px solid rgba(138,36,75,0.6); border-radius: 999px;
+    font-size: .95rem; font-weight: 600; color: var(--text-muted);
+    background: rgba(17,31,53,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .status-pill strong { color: var(--text); font-size: 1.1rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(246,48,73,.6); animation: pulse-dot 2.4s infinite; }
+  @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(246,48,73,.6); } 70% { box-shadow: 0 0 0 6px rgba(246,48,73,0); } 100% { box-shadow: 0 0 0 0 rgba(246,48,73,0); } }
+
+  /* Glassmorphism applied to Form Container */
+  .console {
+    position: relative; border: 1px solid rgba(138,36,75,0.4); border-radius: var(--radius);
+    background: rgba(138, 36, 75, 0.15); /* Transparent for starlight bleed */
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    padding: 32px 32px 30px; margin-bottom: 56px;
+    box-shadow: 0 24px 48px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: box-shadow .25s var(--ease), border-color .25s var(--ease);
+  }
+  .console.is-editing { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(246,48,73,.35), 0 24px 48px -24px rgba(246,48,73,.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+  
+  .console-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 22px; gap: 12px; flex-wrap: wrap; }
+  .console-head h2 { font-size: 1.4rem; color: var(--text); }
+  .console-head .eyebrow { font-size: .85rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 4px; }
+  
+  .edit-flag { font-size: .8rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; display: none; background: rgba(246,48,73,0.1); }
+  .console.is-editing .edit-flag { display: inline-block; }
+
+  .console-section-title { font-weight: 700; font-size: 1.2rem; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px dashed rgba(138,36,75,0.5); }
+
+  .forge-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 22px; }
+  .sliders-row { grid-template-columns: 1fr 1fr; margin-top: 24px; padding-top: 20px; border-top: 1px dashed rgba(138,36,75,0.5); }
+  .artifact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .circlet-field { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .field label { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
+  .field label output { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+
+  .select-shell { position: relative; }
+  .select-shell::after { content: ''; position: absolute; right: 16px; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--accent-2); border-bottom: 2px solid var(--accent-2); transform: translateY(-65%) rotate(45deg); pointer-events: none; }
+  
+  select { appearance: none; width: 100%; background: rgba(17,31,53,0.7); border: 1px solid rgba(138,36,75,0.6); color: var(--text); padding: 13px 40px 13px 14px; border-radius: 8px; font-size: 1.05rem; font-weight: 500; cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s; }
+  select:hover { border-color: var(--accent-2); background: rgba(17,31,53,0.8); }
+  select:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  select option { background: var(--bg-main); color: var(--text); font-family: 'Rajdhani', sans-serif; }
+
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(138,36,75,0.4); border-radius: 3px; outline: none; margin: 10px 0; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 12px rgba(246,48,73,0.6); transition: transform .15s, background .15s; }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); background: #fff; }
+
+  .link-node { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 22px; }
+  .link-line { width: 46px; height: 2px; background: var(--line); position: relative; transition: background .3s var(--ease); }
+  .link-line::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); opacity: 0; transition: opacity .3s var(--ease); }
+  .link-diamond { width: 11px; height: 11px; border: 2px solid var(--line); transform: rotate(45deg); background: var(--bg-main); transition: border-color .3s var(--ease), background .3s var(--ease), box-shadow .3s var(--ease); }
+  
+  .forge-row.is-linked .link-line::before { opacity: 1; }
+  .forge-row.is-linked .link-diamond { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 16px 3px rgba(246,48,73,.7); animation: linked-pulse 1.8s infinite; }
+  @keyframes linked-pulse { 0%, 100% { transform: rotate(45deg) scale(1); } 50% { transform: rotate(45deg) scale(1.3); } }
+
+  .console-actions { display: flex; align-items: center; gap: 14px; margin-top: 36px; flex-wrap: wrap; }
+
+  .btn { font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 8px; border: 1px solid transparent; padding: 14px 26px; font-size: 1.05rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform .15s var(--ease), background .2s, border-color .2s, box-shadow .2s; }
+  .btn:active { transform: translateY(2px); }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 10px 24px -8px rgba(246,48,73,.8); }
+  .btn-primary:hover { background: var(--accent-2); box-shadow: 0 14px 28px -6px rgba(208,39,82,.9); }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--text-muted); }
+  .btn-ghost:hover { border-color: var(--accent-2); color: var(--text); background: rgba(138,36,75,0.1); }
+
+  .form-hint { font-size: .9rem; font-weight: 500; color: var(--text-muted); margin-top: 16px; }
+
+  .dash-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; flex-wrap: wrap; gap: 16px; }
+  .dash-title-group { flex: 1; min-width: 200px; }
+  .dash-title-group h2 { font-size: 1.4rem; }
+  .dash-title-group .eyebrow { font-size: .85rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 4px; }
+  
+  .search-wrapper { position: relative; flex: 1; min-width: 240px; max-width: 320px; }
+  .search-wrapper svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: rgba(138,36,75,0.8); transition: color .2s; }
+  .search-input { width: 100%; background: rgba(17,31,53,0.6); border: 1px solid rgba(138,36,75,0.6); color: var(--text); padding: 12px 14px 12px 42px; border-radius: 8px; font-size: 1rem; font-weight: 500; backdrop-filter: blur(8px); transition: border-color .2s, box-shadow .2s, background .2s; }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: rgba(17,31,53,0.8); outline: none; }
+  .search-input:focus + svg { color: var(--accent); }
+  
+  .count-chip { font-size: .9rem; font-weight: 600; color: var(--text-muted); border: 1px solid rgba(138,36,75,0.6); border-radius: 999px; padding: 6px 16px; white-space: nowrap; background: rgba(17,31,53,0.5); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px; perspective: 1200px; }
+
+  /* Glassmorphism & 3D Hover on Cards */
+  .card {
+    position: relative; border: 1px solid rgba(138,36,75,0.5); border-radius: var(--radius);
+    background: rgba(138, 36, 75, 0.15);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+    animation: card-in .4s var(--ease) both; display: flex; flex-direction: column;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.3s ease;
+    transform-style: preserve-3d;
+    overflow: hidden; 
+  }
+  .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, transparent, var(--accent), transparent); background-size: 200% 100%; opacity: 0; z-index: -1; transition: opacity 0.3s var(--ease); }
+  .card:hover { transform: translateY(-8px) scale(1.03) rotateX(3deg) rotateY(-3deg); border-color: var(--accent-2); box-shadow: -8px 18px 35px -8px rgba(11, 20, 35, 0.8), 0 0 25px rgba(208,39,82,0.3); z-index: 2; }
+  .card:hover::before { opacity: 0.15; animation: scan-glow 2s linear infinite; }
+  
+  @keyframes scan-glow { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  @keyframes card-in { from { opacity: 0; transform: translateY(20px) scale(.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  
+  .card-band { background: linear-gradient(120deg, rgba(138,36,75,0.7), rgba(17,31,53,0.5)); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(138,36,75,0.4); }
+  
+  .card-portrait { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent; }
+  
+  /* Zoomed in object fit for weapon icon */
+  .card-portrait img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.75); }
+
+  .weapon-info { flex: 1; margin-left: 14px; }
+  .weapon-name { font-size: 1.1rem; font-weight: 700; color: #fff; line-height: 1.1; }
+  .weapon-meta { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: rgba(255,255,255,.85); display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  .lvl-tag { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+
+  .rank-badge { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; color: #fff; background: rgba(17,31,53,0.8); border: 2px solid var(--line); transform: rotate(45deg); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+  .rank-badge span { transform: rotate(-45deg); }
+  .rank-S { border-color: #FFD700; color: #FFD700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+  .rank-A { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px rgba(246,48,73,0.4); }
+  .rank-B { border-color: #4CAF50; color: #4CAF50; }
+  .rank-C { border-color: var(--text-muted); color: var(--text-muted); }
+
+  .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .card-body .char-name { font-size: 1.5rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .card-body .char-role { font-size: .95rem; font-weight: 500; color: var(--text-muted); margin-top: 2px; }
+  
+  .cp-container { margin-top: 16px; padding: 12px 14px; background: rgba(17, 31, 53, 0.4); border: 1px solid rgba(138,36,75,0.3); border-radius: 8px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+  .cp-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); font-size: 0.85rem; }
+  .cp-value { font-size: 1.4rem; color: #fff; text-shadow: 0 0 10px var(--accent); }
+  .cp-bar-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; border: 1px solid rgba(138,36,75,0.4); }
+  .cp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--line), var(--accent), #ff5c77); box-shadow: 0 0 10px var(--accent); transition: width 0.8s var(--ease); }
+
+  .artifact-inset { background: rgba(11, 20, 35, 0.4); border: 1px solid rgba(138,36,75,0.3); border-radius: 8px; padding: 14px 16px; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); }
+  .artifact-item { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; font-weight: 600; }
+  
+  .art-img { 
+    width: 30px; 
+    height: 30px; 
+    object-fit: contain;
+    transform: scale(1.4);
+    filter: drop-shadow(0 0 4px rgba(246, 48, 73, 0.7)); 
+    background: transparent; 
+    border: none; 
+    box-shadow: none; 
+    border-radius: 0;
+  }
+  
+  .art-name { color: var(--text); }
+  .art-missing { color: var(--text-muted); font-style: italic; font-weight: 500; }
+
+  .card-actions { display: flex; border-top: 1px solid rgba(138,36,75,0.4); margin-top: 20px; background: rgba(0,0,0,0.15); }
+  .card-actions button { flex: 1; background: transparent; border: 0; color: var(--text-muted); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .95rem; padding: 14px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background .2s, color .2s; }
+  .card-actions button svg { width: 16px; height: 16px; }
+  .card-actions button:not(:last-child) { border-right: 1px solid rgba(138,36,75,0.4); }
+  .card-actions .edit-btn:hover { background: rgba(246,48,73,.15); color: var(--text); }
+  .card-actions .export-btn:hover { background: rgba(255,255,255,.05); color: #fff; }
+  .card-actions .delete-btn:hover { background: rgba(208,39,82,.2); color: var(--text); }
+  .card-actions .delete-btn.confirming { background: var(--accent); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
+  .empty-state { grid-column: 1 / -1; border: 1px dashed rgba(138,36,75,0.6); border-radius: var(--radius); padding: 64px 24px; text-align: center; color: var(--text-muted); background: rgba(17,31,53,0.3); backdrop-filter: blur(4px); }
+  .empty-state svg { width: 42px; height: 42px; margin-bottom: 16px; opacity: .7; color: var(--accent-2); }
+  .empty-state h3 { color: var(--text); font-size: 1.3rem; margin-bottom: 8px; }
+  .empty-state p { margin: 0; font-size: 1rem; max-width: 400px; margin-inline: auto; }
+
+  #toast-container { position: fixed; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 9999; }
+  .toast {
+    background: rgba(17,31,53,0.95); backdrop-filter: blur(8px);
+    border-left: 4px solid var(--accent); color: var(--text); font-weight: 600;
+    padding: 16px 22px; border-radius: 6px; font-size: 1.05rem;
+    box-shadow: 0 14px 30px -10px rgba(0,0,0,.8);
+    display: flex; align-items: center; gap: 12px;
+    animation: toast-slide-in .3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  }
+  .toast.toast-success { border-left-color: #4CAF50; }
+  .toast.toast-error { border-left-color: var(--accent-2); }
+  .toast.leaving { animation: toast-slide-out .3s var(--ease) forwards; }
+  
+  @keyframes toast-slide-in { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toast-slide-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+
+  @media (max-width: 720px) {
+    .forge-row, .sliders-row, .artifact-grid { grid-template-columns: 1fr; }
+    .circlet-field { grid-column: auto; }
+    .console-actions { flex-direction: column; align-items: stretch; }
+    .btn { justify-content: center; }
+    .dash-head { flex-direction: column; align-items: flex-start; }
+    .search-wrapper { width: 100%; max-width: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 3.5 6 12l-2 5 5-2 8.5-8.5z"/>
+          <path d="M13 5l3 3"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <p>Action-RPG Build Planner</p>
+        <h1>FORGE</h1>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      Builds saved: <strong id="buildCount">0</strong>
+    </div>
+  </header>
+
+  <section class="console" id="console">
+    <div class="console-head">
+      <div>
+        <span class="eyebrow">Build a loadout</span>
+        <h2 id="consoleTitle">Forge a new build</h2>
+      </div>
+      <span class="edit-flag" id="editFlag">EDITING BUILD</span>
+    </div>
+
+    <form id="buildForm">
+      <div class="forge-row" id="forgeRow">
+        <div class="field">
+          <label for="characterSelect">Character</label>
+          <div class="select-shell">
+            <select id="characterSelect" required>
+              <option value="" disabled selected>Choose a character…</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="link-node" aria-hidden="true">
+          <div class="link-line"></div>
+          <div class="link-diamond"></div>
+        </div>
+
+        <div class="field">
+          <label for="weaponSelect">Weapon</label>
+          <div class="select-shell">
+            <select id="weaponSelect" required>
+              <option value="" disabled selected>Choose a weapon…</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="forge-row sliders-row">
+        <div class="field">
+          <label for="charLevel">Character Level <output id="charLvlOut">1</output></label>
+          <input type="range" id="charLevel" min="1" max="90" value="1">
+        </div>
+        <div class="field">
+          <label for="weaponLevel">Weapon Level <output id="weapLvlOut">1</output></label>
+          <input type="range" id="weaponLevel" min="1" max="90" value="1">
+        </div>
+      </div>
+
+      <div class="console-section-title">Artifact Loadout</div>
+      <div class="artifact-grid">
+        <div class="field"><label for="flowerSelect">Flower of Life</label><div class="select-shell"><select id="flowerSelect" required><option value="" disabled selected>Choose set…</option></select></div></div>
+        <div class="field"><label for="plumeSelect">Plume of Death</label><div class="select-shell"><select id="plumeSelect" required><option value="" disabled selected>Choose set…</option></select></div></div>
+        <div class="field"><label for="sandsSelect">Sands of Eon</label><div class="select-shell"><select id="sandsSelect" required><option value="" disabled selected>Choose set…</option></select></div></div>
+        <div class="field"><label for="gobletSelect">Goblet of Eonothem</label><div class="select-shell"><select id="gobletSelect" required><option value="" disabled selected>Choose set…</option></select></div></div>
+        <div class="field circlet-field"><label for="circletSelect">Circlet of Logos</label><div class="select-shell"><select id="circletSelect" required><option value="" disabled selected>Choose set…</option></select></div></div>
+      </div>
+
+      <div class="console-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 5v14M5 12h14"/></svg>
+          Save Build
+        </button>
+        <button type="button" class="btn btn-ghost" id="cancelEditBtn" style="display:none;">Cancel edit</button>
+      </div>
+      <p class="form-hint">Pick your character, weapon, levels, and artifacts to lock in your strategy.</p>
+    </form>
+  </section>
+
+  <section>
+    <div class="dash-head">
+      <div class="dash-title-group">
+        <span class="eyebrow">Your roster</span>
+        <h2>Saved builds</h2>
+      </div>
+      
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by character name...">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+
+      <span class="count-chip" id="gridCount">0 builds</span>
+    </div>
+
+    <div class="grid" id="buildGrid"></div>
+  </section>
+</div>
+
+<!-- Custom Toast Container -->
+<div id="toast-container"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const CHARACTERS = [
+    { id: '1', name: 'Yelan',       role: 'Hydro DPS',       img: 'https://picsum.photos/seed/Yelan/150/150', baseAtk: 24, baseHp: 1125 },
+    { id: '2', name: 'Zibai',       role: 'Pyro Vanguard',     img: 'https://picsum.photos/seed/Zibai/150/150', baseAtk: 27, baseHp: 1050 },
+    { id: '3', name: 'Kaelen',      role: 'Anemo Trickster',   img: 'https://picsum.photos/seed/Kaelen/150/150', baseAtk: 22, baseHp: 980 },
+    { id: '4', name: 'Raiden',      role: 'Electro Archon',    img: 'https://picsum.photos/seed/Raiden/150/150', baseAtk: 26, baseHp: 1005 },
+    { id: '5', name: 'Zhongli',     role: 'Geo Shield',        img: 'https://picsum.photos/seed/Zhongli/150/150', baseAtk: 20, baseHp: 1144 },
+    { id: '6', name: 'Ganyu',       role: 'Cryo Sniper',       img: 'https://picsum.photos/seed/Ganyu/150/150', baseAtk: 26, baseHp: 763 },
+    { id: '7', name: 'Hu Tao',      role: 'Pyro DPS',          img: 'https://picsum.photos/seed/HuTao/150/150', baseAtk: 18, baseHp: 1211 },
+    { id: '8', name: 'Ayaka',       role: 'Cryo Enforcer',     img: 'https://picsum.photos/seed/Ayaka/150/150', baseAtk: 27, baseHp: 1001 },
+    { id: '9', name: 'Kazuha',      role: 'Anemo Support',     img: 'https://picsum.photos/seed/Kazuha/150/150', baseAtk: 23, baseHp: 1039 },
+    { id: '10', name: 'Bennett',    role: 'Pyro Healer',       img: 'https://picsum.photos/seed/Bennett/150/150', baseAtk: 16, baseHp: 1039 }
+  ];
+
+  const WEAPONS = [
+    { id: '1', name: 'Stormcaller Bow',          type: 'Bow',      atkBonus: 46, img: 'https://enka.network/ui/UI_EquipIcon_Bow_Amos.png' },
+    { id: '2', name: 'Lumen Catalyst',           type: 'Catalyst', atkBonus: 42, img: 'https://enka.network/ui/UI_EquipIcon_Catalyst_Zephyrus.png' },
+    { id: '3', name: 'Voidedge Sword',           type: 'Sword',    atkBonus: 48, img: 'https://enka.network/ui/UI_EquipIcon_Sword_Zephyrus.png' },
+    { id: '4', name: 'Ashfall Claymore',         type: 'Claymore', atkBonus: 49, img: 'https://enka.network/ui/UI_EquipIcon_Claymore_Wolfmound.png' },
+    { id: '5', name: 'Engulfing Lightning',      type: 'Polearm',  atkBonus: 46, img: 'https://enka.network/ui/UI_EquipIcon_Pole_Narukami.png' },
+    { id: '6', name: 'Amos Bow',                 type: 'Bow',      atkBonus: 48, img: 'https://enka.network/ui/UI_EquipIcon_Bow_Amos.png' },
+    { id: '7', name: 'Black Tassel',             type: 'Polearm',  atkBonus: 38, img: 'https://enka.network/ui/UI_EquipIcon_Pole_Halberd.png' },
+    { id: '8', name: 'Staff of Homa',            type: 'Polearm',  atkBonus: 46, img: 'https://enka.network/ui/UI_EquipIcon_Pole_Homa.png' },
+    { id: '9', name: 'Mistsplitter Reforged',    type: 'Sword',    atkBonus: 48, img: 'https://enka.network/ui/UI_EquipIcon_Sword_Narukami.png' },
+    { id: '10', name: 'Wolf\'s Gravestone',      type: 'Claymore', atkBonus: 46, img: 'https://enka.network/ui/UI_EquipIcon_Claymore_Wolfmound.png' }
+  ];
+
+  const ARTIFACT_SETS = [
+    { id: 'art1', name: 'Gladiator\'s Finale',     powerBonus: 350 },
+    { id: 'art2', name: 'Wanderer\'s Troupe',      powerBonus: 310 },
+    { id: 'art3', name: 'Emblem of Severed Fate',  powerBonus: 380 },
+    { id: 'art4', name: 'Crimson Witch of Flames', powerBonus: 370 },
+    { id: 'art5', name: 'Viridescent Venerer',     powerBonus: 340 },
+    { id: 'art6', name: 'Deepwood Memories',       powerBonus: 320 },
+    { id: 'art7', name: 'Marechaussee Hunter',     powerBonus: 390 },
+    { id: 'art8', name: 'Noblesse Oblige',         powerBonus: 330 },
+    { id: 'art9', name: 'Gilded Dreams',           powerBonus: 350 },
+    { id: 'art10', name: 'Blizzard Strayer',       powerBonus: 360 }
+  ];
+
+  const SLOT_ICONS = {
+    flower: 'https://enka.network/ui/UI_RelicIcon_15001_4.png',
+    plume: 'https://enka.network/ui/UI_RelicIcon_15001_2.png',
+    sands: 'https://enka.network/ui/UI_RelicIcon_15001_5.png',
+    goblet: 'https://enka.network/ui/UI_RelicIcon_15001_1.png',
+    circlet: 'https://enka.network/ui/UI_RelicIcon_15001_3.png'
+  };
+
+  const form            = document.getElementById('buildForm');
+  const characterSelect = document.getElementById('characterSelect');
+  const weaponSelect    = document.getElementById('weaponSelect');
+  const charLevel       = document.getElementById('charLevel');
+  const weaponLevel     = document.getElementById('weaponLevel');
+  const charLvlOut      = document.getElementById('charLvlOut');
+  const weapLvlOut      = document.getElementById('weapLvlOut');
+  
+  const flowerSelect    = document.getElementById('flowerSelect');
+  const plumeSelect     = document.getElementById('plumeSelect');
+  const sandsSelect     = document.getElementById('sandsSelect');
+  const gobletSelect    = document.getElementById('gobletSelect');
+  const circletSelect   = document.getElementById('circletSelect');
+
+  const searchInput     = document.getElementById('searchInput');
+  const forgeRow        = document.getElementById('forgeRow');
+  const consoleEl       = document.getElementById('console');
+  const consoleTitle    = document.getElementById('consoleTitle');
+  const submitBtn       = document.getElementById('submitBtn');
+  const cancelEditBtn   = document.getElementById('cancelEditBtn');
+  const buildGrid       = document.getElementById('buildGrid');
+  const buildCountEl    = document.getElementById('buildCount');
+  const gridCountEl     = document.getElementById('gridCount');
+  const toastContainer  = document.getElementById('toast-container');
+
+  let builds = [];
+  let editingId = null;
+
+  charLevel.addEventListener('input', (e) => { charLvlOut.textContent = e.target.value; });
+  weaponLevel.addEventListener('input', (e) => { weapLvlOut.textContent = e.target.value; });
+  searchInput.addEventListener('input', () => renderBuilds());
+
+  async function apiGetBuilds() {
+    try {
+      const res = await fetch('/api/builds');
+      return await res.json();
+    } catch (err) {
+      console.error(err); return [];
+    }
+  }
+
+  async function apiSaveBuild(build) {
+    const res = await fetch('/api/builds', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(build)
+    });
+    return await res.json();
+  }
+
+  async function apiUpdateBuild(id, updatedBuild) {
+    const res = await fetch(`/api/builds/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedBuild)
+    });
+    return await res.json();
+  }
+
+  async function apiDeleteBuild(id) {
+    const res = await fetch(`/api/builds/${id}`, { method: 'DELETE' });
+    return res.ok;
+  }
+
+  function populateSelect(selectEl, items, placeholder) {
+    const placeholderOpt = `<option value="" disabled selected>${placeholder}</option>`;
+    selectEl.innerHTML = placeholderOpt + items.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+  }
+
+  function findCharacter(id) { return CHARACTERS.find(c => c.id === id); }
+  function findWeapon(id) { return WEAPONS.find(w => w.id === id); }
+  function getArtifactData(id) {
+    const set = ARTIFACT_SETS.find(a => a.id === id);
+    return set ? set : { name: 'None Equipped', powerBonus: 0 };
+  }
+
+  function calculateCombatPower(build) {
+    const char = findCharacter(build.characterId) || { baseAtk: 20, baseHp: 1000 };
+    const weap = findWeapon(build.weaponId) || { atkBonus: 40 };
+    const cLvl = parseInt(build.charLevel) || 1;
+    const wLvl = parseInt(build.weaponLevel) || 1;
+    
+    let artBonus = 0;
+    const artSlots = ['flower', 'plume', 'sands', 'goblet', 'circlet'];
+    artSlots.forEach(slot => {
+      const art = getArtifactData(build.artifacts?.[slot]);
+      artBonus += art.powerBonus || 0;
+    });
+
+    const rawPower = (char.baseAtk * cLvl * 1.5) + (weap.atkBonus * wLvl) + (char.baseHp * 0.5);
+    return Math.floor(rawPower + artBonus);
+  }
+
+  function updateLinkState() {
+    const linked = characterSelect.value && weaponSelect.value;
+    forgeRow.classList.toggle('is-linked', !!linked);
+  }
+
+  function getRankBadge(level) {
+    const lvl = parseInt(level);
+    if (lvl >= 80) return 'S';
+    if (lvl >= 60) return 'A';
+    if (lvl >= 40) return 'B';
+    return 'C';
+  }
+
+  function renderBuilds() {
+    const filterText = searchInput.value.toLowerCase();
+    const filtered = builds.filter(b => b.characterName && b.characterName.toLowerCase().includes(filterText));
+
+    buildCountEl.textContent = builds.length;
+    gridCountEl.textContent  = filtered.length + (filtered.length === 1 ? ' build' : ' builds');
+
+    if (filtered.length === 0) {
+      buildGrid.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5 6 12l-2 5 5-2 8.5-8.5z"/><path d="M13 5l3 3"/></svg>
+          <h3>${builds.length === 0 ? 'No builds forged yet' : 'No builds match your search'}</h3>
+          <p>Create a loadout above to start tracking your perfect combat builds.</p>
+        </div>`;
+      return;
+    }
+
+    buildGrid.innerHTML = '';
+    filtered.forEach(build => {
+      buildGrid.appendChild(createCard(build));
+    });
+  }
+
+  function createCard(build) {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.dataset.id = build.id;
+
+    const rank = getRankBadge(build.charLevel);
+    const art = build.artifacts || {};
+    
+    const flower = getArtifactData(art.flower);
+    const plume = getArtifactData(art.plume);
+    const sands = getArtifactData(art.sands);
+    const goblet = getArtifactData(art.goblet);
+    const circlet = getArtifactData(art.circlet);
+
+    const cp = calculateCombatPower(build);
+    const maxTheorheticalCP = 12500;
+    const cpPercent = Math.min(Math.round((cp / maxTheorheticalCP) * 100), 100);
+
+    const weaponDataFallback = findWeapon(build.weaponId);
+    const safeImgSrc = build.weaponImg || (weaponDataFallback ? weaponDataFallback.img : '');
+
+    card.innerHTML = `
+      <div class="rank-badge rank-${rank}"><span>${rank}</span></div>
+      <div class="card-band">
+        <div class="card-portrait"><img src="${safeImgSrc}" alt="${build.weaponName}" crossorigin="anonymous"></div>
+        <div class="weapon-info">
+          <div class="weapon-name">${build.weaponName}</div>
+          <div class="weapon-meta">${build.weaponType} <span class="lvl-tag">Lv.${build.weaponLevel}</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="char-name">${build.characterName} <span class="lvl-tag" style="font-size:0.75rem; background:rgba(246,48,73,0.25); color:var(--accent); border-color:var(--accent); padding:2px 8px;">Lv.${build.charLevel}</span></div>
+        <div class="char-role">${build.characterRole}</div>
+        
+        <div class="cp-container">
+          <div class="cp-header"><span>Combat Power</span> <span class="cp-value">${cp.toLocaleString()}</span></div>
+          <div class="cp-bar-bg"><div class="cp-bar-fill" style="width: ${cpPercent}%;"></div></div>
+        </div>
+
+        <div class="artifact-inset">
+          <div class="artifact-item"><img src="${SLOT_ICONS.flower}" class="art-img" crossorigin="anonymous" alt="Flower"> <span class="${flower.name === 'None Equipped' ? 'art-missing' : 'art-name'}">${flower.name}</span></div>
+          <div class="artifact-item"><img src="${SLOT_ICONS.plume}" class="art-img" crossorigin="anonymous" alt="Plume"> <span class="${plume.name === 'None Equipped' ? 'art-missing' : 'art-name'}">${plume.name}</span></div>
+          <div class="artifact-item"><img src="${SLOT_ICONS.sands}" class="art-img" crossorigin="anonymous" alt="Sands"> <span class="${sands.name === 'None Equipped' ? 'art-missing' : 'art-name'}">${sands.name}</span></div>
+          <div class="artifact-item"><img src="${SLOT_ICONS.goblet}" class="art-img" crossorigin="anonymous" alt="Goblet"> <span class="${goblet.name === 'None Equipped' ? 'art-missing' : 'art-name'}">${goblet.name}</span></div>
+          <div class="artifact-item"><img src="${SLOT_ICONS.circlet}" class="art-img" crossorigin="anonymous" alt="Circlet"> <span class="${circlet.name === 'None Equipped' ? 'art-missing' : 'art-name'}">${circlet.name}</span></div>
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button type="button" class="edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Edit</button>
+        <button type="button" class="export-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export</button>
+        <button type="button" class="delete-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Del</button>
+      </div>
+    `;
+
+    card.querySelector('.edit-btn').addEventListener('click', () => startEdit(build.id));
+    card.querySelector('.export-btn').addEventListener('click', () => exportToPNG(card, build.characterName));
+
+    const delBtn = card.querySelector('.delete-btn');
+    let confirmTimer = null;
+    delBtn.addEventListener('click', () => {
+      if (!delBtn.classList.contains('confirming')) {
+        delBtn.classList.add('confirming');
+        delBtn.innerHTML = 'Sure?';
+        confirmTimer = setTimeout(() => {
+          delBtn.classList.remove('confirming');
+          delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Del';
+        }, 3000);
+        return;
+      }
+      clearTimeout(confirmTimer);
+      removeBuild(build.id);
+    });
+
+    return card;
+  }
+
+  function showToast(message, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    
+    let icon = '🔔';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '🗑️';
+
+    el.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    toastContainer.appendChild(el);
+    
+    setTimeout(() => {
+      el.classList.add('leaving');
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
+  }
+
+  async function exportToPNG(cardElement, buildName) {
+    const originalTransform = cardElement.style.transform;
+    const actionsPanel = cardElement.querySelector('.card-actions');
+    
+    cardElement.style.transform = 'none';
+    cardElement.style.transition = 'none';
+    actionsPanel.style.display = 'none';
+
+    showToast('Preparing export...', 'info');
+
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        backgroundColor: '#111F35',
+        useCORS: true 
+      });
+      const link = document.createElement('a');
+      link.download = `${buildName.replace(/\s+/g, '_')}_Build.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Image exported successfully!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to generate image.', 'error');
+    } finally {
+      cardElement.style.transform = originalTransform;
+      cardElement.style.transition = '';
+      actionsPanel.style.display = 'flex';
+    }
+  }
+
+  function buildPayload() {
+    const character = findCharacter(characterSelect.value);
+    const weapon    = findWeapon(weaponSelect.value);
+    return {
+      characterId:   character.id,
+      characterName: character.name,
+      characterRole: character.role,
+      characterImg:  character.img,
+      weaponId:      weapon.id,
+      weaponName:    weapon.name,
+      weaponType:    weapon.type,
+      weaponImg:     weapon.img,
+      charLevel:     charLevel.value,
+      weaponLevel:   weaponLevel.value,
+      artifacts: {
+        flower:  flowerSelect.value,
+        plume:   plumeSelect.value,
+        sands:   sandsSelect.value,
+        goblet:  gobletSelect.value,
+        circlet: circletSelect.value
+      }
+    };
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (!characterSelect.value || !weaponSelect.value) {
+      showToast('Select a character and a weapon to forge.', 'error');
+      return;
+    }
+
+    const payload = buildPayload();
+    submitBtn.disabled = true;
+
+    if (editingId) {
+      await apiUpdateBuild(editingId, payload);
+      showToast('Build Updated Successfully', 'success');
+      stopEdit();
+    } else {
+      await apiSaveBuild(payload);
+      showToast('Build Saved Successfully', 'success');
+      form.reset();
+      characterSelect.value = '';
+      weaponSelect.value = '';
+      charLevel.value = 1; charLvlOut.textContent = '1';
+      weaponLevel.value = 1; weapLvlOut.textContent = '1';
+      flowerSelect.value = '';
+      plumeSelect.value = '';
+      sandsSelect.value = '';
+      gobletSelect.value = '';
+      circletSelect.value = '';
+      updateLinkState();
+    }
+
+    builds = await apiGetBuilds(); 
+    submitBtn.disabled = false;
+    renderBuilds();
+  });
+
+  function startEdit(id) {
+    const build = builds.find(b => b.id === id);
+    if (!build) return;
+
+    editingId = id;
+    characterSelect.value = build.characterId;
+    weaponSelect.value = build.weaponId;
+    
+    charLevel.value = build.charLevel || 1;
+    charLvlOut.textContent = build.charLevel || 1;
+    weaponLevel.value = build.weaponLevel || 1;
+    weapLvlOut.textContent = build.weaponLevel || 1;
+
+    const art = build.artifacts || {};
+    flowerSelect.value = art.flower || '';
+    plumeSelect.value = art.plume || '';
+    sandsSelect.value = art.sands || '';
+    gobletSelect.value = art.goblet || '';
+    circletSelect.value = art.circlet || '';
+    
+    updateLinkState();
+
+    consoleEl.classList.add('is-editing');
+    consoleTitle.textContent = 'Edit build';
+    cancelEditBtn.style.display = 'inline-flex';
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function stopEdit() {
+    editingId = null;
+    form.reset();
+    characterSelect.value = '';
+    weaponSelect.value = '';
+    charLevel.value = 1; charLvlOut.textContent = '1';
+    weaponLevel.value = 1; weapLvlOut.textContent = '1';
+    
+    flowerSelect.value = '';
+    plumeSelect.value = '';
+    sandsSelect.value = '';
+    gobletSelect.value = '';
+    circletSelect.value = '';
+    
+    updateLinkState();
+
+    consoleEl.classList.remove('is-editing');
+    consoleTitle.textContent = 'Forge a new build';
+    cancelEditBtn.style.display = 'none';
+  }
+
+  cancelEditBtn.addEventListener('click', stopEdit);
+
+  async function removeBuild(id) {
+    await apiDeleteBuild(id);
+    builds = await apiGetBuilds();
+    if (editingId === id) stopEdit();
+    showToast('Build Deleted', 'error');
+    renderBuilds();
+  }
+
+  characterSelect.addEventListener('change', updateLinkState);
+  weaponSelect.addEventListener('change', updateLinkState);
+
+  async function init() {
+    populateSelect(characterSelect, CHARACTERS, 'Choose a character…');
+    populateSelect(weaponSelect, WEAPONS, 'Choose a weapon…');
+    populateSelect(flowerSelect, ARTIFACT_SETS, 'Choose a set…');
+    populateSelect(plumeSelect, ARTIFACT_SETS, 'Choose a set…');
+    populateSelect(sandsSelect, ARTIFACT_SETS, 'Choose a set…');
+    populateSelect(gobletSelect, ARTIFACT_SETS, 'Choose a set…');
+    populateSelect(circletSelect, ARTIFACT_SETS, 'Choose a set…');
+
+    builds = await apiGetBuilds();
+    renderBuilds();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
