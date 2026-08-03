@@ -1,4 +1,4 @@
-<h2>**RPG Build Planner**</h2>
+<h2>RPG Build Planner</h2>
 Hi! This is the final project I built for my DBMS course. The goal was to create a desktop application that helps RPG players manage their character loadouts. Instead of just saving data to a local file, I built this using a relational database (MySQL) to ensure all the character, weapon, and artifact data stays perfectly organized and linked.
 
 **Architecture
@@ -10,7 +10,7 @@ Frontend:** HTML5, CSS, and JavaScript.
 
 **Database:** MySQL (Relational), using normalized tables and foreign keys to keep everything consistent.
 
-<h3>How to run it**</h3>
+<h3>How to run it</h3>
 Since I’ve bundled the application for you, you don't need to mess with the code to play with it. Just follow these steps:
 
 Step 1: Set up the Database
