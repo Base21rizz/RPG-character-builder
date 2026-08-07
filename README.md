@@ -30,6 +30,22 @@ main.js: The brains of the operation. It runs the Express server, connects to My
 
 rpg.sql: The database blueprint. It defines the tables, sets up the relations, and holds the default data.
 
-Why is the file size so big?
-You might notice the .rar file is a bit large (~220MB). That’s because I’ve bundled the app as a standalone executable using Electron, which includes its own browser engine so it runs smoothly on any machine without needing to install Node.js separately!
+Explanation of why our file size is big:
+You might notice the .rar file is a quite large (~220MB). That’s because we’ve bundled the app as a standalone executable using Electron, which includes its own browser engine so it runs smoothly on any machine without needing to install Node.js separately.
+
+<h3>How it works</h3>
+It saves player build for you and keeps that in Database and shows in our app. Suppose you created a player build consisting of :
+<img width="1185" height="956" alt="image" src="https://github.com/user-attachments/assets/f077dedd-03d6-4b02-92c4-160b1e62c25c" />
+
+
+Then it will save such builds (we exported this image using our app):
+<img width="712" height="1008" alt="Yelan_Build" src="https://github.com/user-attachments/assets/6d32ac12-30ff-40c5-b823-56d915633893" />
+
+We can also see that on Database using mysql:
+<img width="979" height="512" alt="image" src="https://github.com/user-attachments/assets/0df44ea7-a8e8-4291-b641-2d7b91427735" />
+
+Thank you.
+
+
+
 
